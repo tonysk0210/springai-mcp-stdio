@@ -129,9 +129,9 @@ flowchart LR
     H --> I["CreateMessageResult<br/>role=ASSISTANT"]
     I -->|MCP protocol| J["Server 取得排障建議<br/>回傳給 LLM"]
 
-    style F fill:#ff2bd6,stroke:#05010d,color:#ffffff
-    style G fill:#00f0ff,stroke:#05010d,color:#05010d
-    style H fill:#412991,stroke:#05010d,color:#ffffff
+    style F fill:#fde4f5,stroke:#c2185b,color:#3a0b22
+    style G fill:#e0f7fc,stroke:#0288a8,color:#0b2530
+    style H fill:#ece7fa,stroke:#5b3fa8,color:#241640
 ```
 
 > 📌 **`@McpSampling` handler 注入的是 `ChatModel`，不是 `ChatClient`。** `ChatClient` 已經綁了 MCP tools —— 若用它，被 sample 出來的回應可能又觸發一次 tool call，而那個 tool 自己又會 sampling → 無限迴圈。`ChatModel` 是不帶任何工具的純 LLM 呼叫層。
@@ -154,8 +154,8 @@ flowchart TB
     A1 -.progressToken.-> S
     S -.ProgressNotification.-> B1
 
-    style A2 fill:#ff2a6d,stroke:#05010d,color:#ffffff
-    style B2 fill:#39ff14,stroke:#05010d,color:#05010d
+    style A2 fill:#ffe3ea,stroke:#c2185b,color:#3a0b22
+    style B2 fill:#e4f7e0,stroke:#2e7d32,color:#122a14
 ```
 
 > 📌 **只有 `HelpDeskController` 在 `toolContext` 放了 `progressToken`**，所以只有它收得到進度。filesystem / github 兩個 controller 沒放，即使 server 想回報也無從對應。
@@ -231,10 +231,12 @@ flowchart TB
     H2 --> OAI
     C1 <--> SS
 
-    style FE fill:#0d0420,stroke:#00f0ff,color:#d6f7ff
-    style BE fill:#0d0420,stroke:#ff2bd6,color:#d6f7ff
-    style SRV fill:#0d0420,stroke:#39ff14,color:#d6f7ff
-    style MCPH fill:#14082e,stroke:#f9f871,color:#d6f7ff
+    style FE fill:#e6f7fb,stroke:#0288a8,color:#0b2530
+    style BE fill:#fdeef7,stroke:#c2185b,color:#3a0b22
+    style SRV fill:#edfaed,stroke:#2e7d32,color:#122a14
+    style MCPH fill:#fffbe6,stroke:#b8860b,color:#3a3000
+    style COORD fill:#f4f0ff,stroke:#6a4bc4,color:#241640
+    style CTRL fill:#fff4ec,stroke:#c9631b,color:#3a1c08
 ```
 
 Client 同時扮演兩個角色：**對前端**是 Web MVC + SSE 後端；**對 MCP** 是 host，以 stdio 拉起三個子行程並在它們之間分派工具。
