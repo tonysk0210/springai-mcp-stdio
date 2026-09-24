@@ -136,9 +136,9 @@ stateDiagram-v2
     檢查owner --> DECLINE: meta.username 缺失
     檢查owner --> Pending: register() + SSE push
 
-    Pending --> ACCEPT: 使用者送出 priority 與 contactPhone<br/>complete(sessionId, owner, data)
-    Pending --> CANCEL_按鈕: 按下取消<br/>cancel(sessionId, owner)
-    Pending --> CANCEL_逾時: 5 分鐘無回應<br/>expire(sessionId)
+    Pending --> ACCEPT: POST /chat 提交資料
+    Pending --> CANCEL_按鈕: 使用者取消
+    Pending --> CANCEL_逾時: 等待逾時（5 分鐘）
     Pending --> DECLINE: 非預期例外
 
     ACCEPT --> [*]: 工具拿到資料，繼續建單
@@ -147,12 +147,12 @@ stateDiagram-v2
     DECLINE --> [*]: 本次 elicitation 失敗
 
     note right of Pending
-        thread 凍結於 future.get(5, MINUTES)
-        使用者以另一條 POST /api/helpdesk/chat request 提交答案
+        等待 CompletableFuture
+        最多 5 分鐘
     end note
 ```
 
-> 📌 **`Pending` 狀態下，那條 thread 是真的停住的**（`LockSupport.park()`）。解除它的不是 timer、不是輪詢，而是另一次 `POST /api/helpdesk/chat` 帶著 `sessionId` 進來，在完全不同的 Tomcat thread 上呼叫 `complete()`。
+> 📌 **`Pending` 狀態下，那條 thread 是真的停住的**（`LockSupport.park()`）。使用者以另一條 `POST /api/helpdesk/chat` request 帶著 `sessionId` 提交 `priority` 與 `contactPhone`；另一條 Tomcat thread 會呼叫 `complete(sessionId, owner, data)` 解除等待。取消時則呼叫 `cancel(sessionId, owner)`；等滿五分鐘則由等待中的 thread 呼叫 `expire(sessionId)`。
 
 ### 畫面與 log 實錄
 
