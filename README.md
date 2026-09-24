@@ -155,7 +155,7 @@ stateDiagram-v2
     end note
 ```
 
-> 📌 **`Pending` 狀態下，那條 thread 是真的停住的**（`LockSupport.park()`）。解除它的不是 timer、不是輪詢，而是另一次 `POST /api/helpdesk/chat` 帶著 `sessionId` 進來，在完全不同的 Tomcat thread 上呼叫 `complete()`。
+> 📌 `Pending` 時，第一條 thread 停在 `future.get()`。第二條 `POST /api/helpdesk/chat` thread 收到答案並呼叫 `complete()`，再喚醒第一條 thread，讓它把答案回給 MCP server。
 
 ### 畫面與 log 實錄
 
@@ -214,16 +214,6 @@ stateDiagram-v2
 ![GitHub repo 內容列表](docs/screenshots/checkmyrepo.png)
 
 > 截圖中第一次詢問時 LLM 回了一段 GitHub device 授權說明，同一句話重送一次就正常列出內容。本專案以 `GITHUB_PERSONAL_ACCESS_TOKEN` 認證，遇到這種回覆時先確認 token 已設定，再重送即可。
-
-#### 尚待補拍
-
-以下畫面文中有提到但目前尚無截圖，補拍後放進 `docs/screenshots/` 並在上方對應處引用即可：
-
-| 建議檔名 | 怎麼重現 | 取景重點 |
-|---|---|---|
-| `sse-status-badge.png` | 停掉後端再啟動 | `未連線 / 連線中... / 已連線 / 連線中斷，重試中...` 四種狀態（可分別截圖後合成一張）；斷線時每 2 秒自動重連，後端有 15 秒心跳 |
-| `startup-tools-log.png` | Client 啟動當下的 terminal | 三段 `ToolUtil` 清單 + 各自的「共開放 N 個 tools」；任一段為 0 代表該 MCP server 沒連上 |
-| `pretty-logger.png` | 任一次建單後回看 terminal | 完整一組 `╔══ ► LLM Request #N` / `╚` 方框，含 `[TOOL_CALL]` / `[TOOL_RESP]` |
 
 ---
 
