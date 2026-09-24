@@ -7,7 +7,7 @@
   <img alt="Java" src="https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white">
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1.0-6DB33F?logo=springboot&logoColor=white">
   <img alt="Spring AI" src="https://img.shields.io/badge/Spring%20AI-2.0.0-6DB33F?logo=spring&logoColor=white">
-  <img alt="MCP" src="https://img.shields.io/badge/MCP-stdio%20JSON--RPC-1a1a1a?logo=modelcontextprotocol&logoColor=white">
+  <img alt="MCP" src="https://img.shields.io/badge/MCP-STDIO%20JSON--RPC-1a1a1a?logo=modelcontextprotocol&logoColor=white">
   <img alt="Lombok" src="https://img.shields.io/badge/Lombok-1.18-BC4521?logo=lombok&logoColor=white">
 </p>
 <p>
@@ -29,13 +29,13 @@
 
 但 MCP 規格裡真正有意思的部分在**反方向**：server 在執行工具的過程中，可以回過頭來要求 client 做事。
 
-| 方向 | 呼叫 | 一般 MCP 範例 | 本專案 |
-|---|---|---|---|
-| **client → server** | `tools/call` | ✅ | ✅ |
-| **server → client** | `elicitation/create` — 「我還缺資料，去問使用者」 | ❌ | ✅ `createTicket` |
-| **server → client** | `sampling/createMessage` — 「借你的 LLM 用一下」 | ❌ | ✅ `troubleshootIssue` |
-| **server → client** | `notifications/progress` — 「我做到 60% 了」 | ❌ | ✅ `getTicketStatus` |
-| **server → client** | `notifications/message` — 「把這行 log 印出來」 | ❌ | ✅ 三個工具皆有 |
+| 方向                | 呼叫                                              | 一般 MCP 範例 | 本專案                 |
+| ------------------- | ------------------------------------------------- | ------------- | ---------------------- |
+| **client → server** | `tools/call`                                      | ✅            | ✅                     |
+| **server → client** | `elicitation/create` — 「我還缺資料，去問使用者」 | ❌            | ✅ `createTicket`      |
+| **server → client** | `sampling/createMessage` — 「借你的 LLM 用一下」  | ❌            | ✅ `troubleshootIssue` |
+| **server → client** | `notifications/progress` — 「我做到 60% 了」      | ❌            | ✅ `getTicketStatus`   |
+| **server → client** | `notifications/message` — 「把這行 log 印出來」   | ❌            | ✅ 三個工具皆有        |
 
 四種反向能力都實作到底，會逼出四個平常碰不到的工程問題：
 
@@ -48,21 +48,21 @@
 
 ### 三個子專案
 
-| 目錄 | Port | 角色 |
-|---|---|---|
-| [`mySpringAi_MCP_Server_stdio`](./mySpringAi_MCP_Server_stdio) | 無（stdio 子行程） | **MCP Server** — 3 個 `@McpTool`，各自示範一種反向能力 |
-| [`mySpringAi_MCP_Client`](./mySpringAi_MCP_Client) | **8080** | **MCP Client + 後端** — 同時連 3 個 MCP server，包裝成 REST + SSE |
-| [`mcp-ui`](./mcp-ui) | **5173** | **前端** — React 19 + Vite 8，三個聊天頁 |
+| 目錄                                                           | Port               | 角色                                                              |
+| -------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------- |
+| [`mySpringAi_MCP_Server_stdio`](./mySpringAi_MCP_Server_stdio) | 無（stdio 子行程） | **MCP Server** — 3 個 `@McpTool`，各自示範一種反向能力            |
+| [`mySpringAi_MCP_Client`](./mySpringAi_MCP_Client)             | **8080**           | **MCP Client + 後端** — 同時連 3 個 MCP server，包裝成 REST + SSE |
+| [`mcp-ui`](./mcp-ui)                                           | **5173**           | **前端** — React 19 + Vite 8，三個聊天頁                          |
 
 ### 順便展示的第二件事：三種 MCP server 來源並陳
 
 Client 同時掛載三個 MCP server，**啟動方式刻意各不相同**，用來驗證同一套 host 程式碼能吃下不同形態的 server：
 
-| Connection key | 來源 | 啟動指令 | 誰在用 |
-|---|---|---|---|
-| `helpdesk-ticket-mcp-server-stdio` | **自製** Spring Boot JAR | `java -jar ./mcp-server-stdio/*.jar` | `/api/helpdesk` |
-| `filesystem` | 官方 Node 套件 | `npx -y @modelcontextprotocol/server-filesystem`（Windows 需 `cmd /c`） | `/api/filesystem` |
-| `github` | 官方 Docker image | `docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server` | `/api/github` |
+| Connection key                     | 來源                     | 啟動指令                                                                              | 誰在用            |
+| ---------------------------------- | ------------------------ | ------------------------------------------------------------------------------------- | ----------------- |
+| `helpdesk-ticket-mcp-server-stdio` | **自製** Spring Boot JAR | `java -jar ./mcp-server-stdio/*.jar`                                                  | `/api/helpdesk`   |
+| `filesystem`                       | 官方 Node 套件           | `npx -y @modelcontextprotocol/server-filesystem`（Windows 需 `cmd /c`）               | `/api/filesystem` |
+| `github`                           | 官方 Docker image        | `docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server` | `/api/github`     |
 
 > 本專案以學習與實驗為目的。部分設定僅適用本機 —— 完整清單見 [已知的刻意取捨](#已知的刻意取捨)。啟動不起來？→ [疑難排解](#疑難排解)
 
@@ -304,26 +304,26 @@ Client 一人分飾兩角：**對前端**是 Web MVC + SSE 後端；**對 MCP** 
 
 這是本專案最容易踩錯的地方 —— 同一個 MCP server 有**兩個不同的名字**，各自用在不同 API 上，**不可互換**：
 
-| | Server 自報名稱 | Connection key |
-|---|---|---|
-| **值** | `mySpringAi_MCP_Server_stdio` | `helpdesk-ticket-mcp-server-stdio` |
-| **來源** | server 端 `spring.ai.mcp.server.name` | client 端 properties 的 `...stdio.connections.<這裡>` |
-| **從哪讀到** | `client.getServerInfo().name()` | 設定檔的 key 本身 |
-| **用在** | `ToolUtil.selectToolsFor(...)` 的 serverName hint<br/>`McpServerToolFilter` 的封鎖比對 | `@McpElicitation(clients = ...)`<br/>`@McpSampling` / `@McpProgress` / `@McpLogging` 同 |
+|              | Server 自報名稱                                                                        | Connection key                                                                          |
+| ------------ | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **值**       | `mySpringAi_MCP_Server_stdio`                                                          | `helpdesk-ticket-mcp-server-stdio`                                                      |
+| **來源**     | server 端 `spring.ai.mcp.server.name`                                                  | client 端 properties 的 `...stdio.connections.<這裡>`                                   |
+| **從哪讀到** | `client.getServerInfo().name()`                                                        | 設定檔的 key 本身                                                                       |
+| **用在**     | `ToolUtil.selectToolsFor(...)` 的 serverName hint<br/>`McpServerToolFilter` 的封鎖比對 | `@McpElicitation(clients = ...)`<br/>`@McpSampling` / `@McpProgress` / `@McpLogging` 同 |
 
 > ⚠️ 填錯不會報錯，只會**靜默失效** —— 工具選不到（0 個 tools），或 handler 永遠不被觸發。
 
 ### 三個 Controller 的隔離矩陣
 
-| | `HelpDeskController` | `FileSystemMcpController` | `GithubMcpController` |
-|---|---|---|---|
-| 路徑 | `/api/helpdesk/**` | `/api/filesystem/chat` | `/api/github/chat` |
-| 工具 hint | `"mySpringAi_MCP_Server_stdio"` | `"filesystem"` | `"github"` |
-| 獨立 `MessageWindowChatMemory` | ✅ | ✅ | ✅ |
-| 獨立 `PrettyLoggerAdvisor` | ✅ | ✅ | ✅ |
-| `toolContext` 放 `progressToken` | ✅ | ❌ | ❌ |
-| 參與 elicitation | ✅ | ❌ | ❌ |
-| 額外的 `parserClient` | ✅ | ❌ | ❌ |
+|                                  | `HelpDeskController`            | `FileSystemMcpController` | `GithubMcpController` |
+| -------------------------------- | ------------------------------- | ------------------------- | --------------------- |
+| 路徑                             | `/api/helpdesk/**`              | `/api/filesystem/chat`    | `/api/github/chat`    |
+| 工具 hint                        | `"mySpringAi_MCP_Server_stdio"` | `"filesystem"`            | `"github"`            |
+| 獨立 `MessageWindowChatMemory`   | ✅                              | ✅                        | ✅                    |
+| 獨立 `PrettyLoggerAdvisor`       | ✅                              | ✅                        | ✅                    |
+| `toolContext` 放 `progressToken` | ✅                              | ❌                        | ❌                    |
+| 參與 elicitation                 | ✅                              | ❌                        | ❌                    |
+| 額外的 `parserClient`            | ✅                              | ❌                        | ❌                    |
 
 三個 controller 的 `chatMemory` 都是各自 `new` 出來的。即使 `username` 相同，helpdesk 的對話歷史也**不會**滲進 filesystem 頁。
 
@@ -373,12 +373,12 @@ springai_mcp_clientapp_stdio/
 
 四種反向能力，**每種都用同一個四拍子拆解**：規格怎麼定義 → Server 怎麼發動 → Client 怎麼接 → 踩到的坑。
 
-| 能力 | 對應工具 | 一句話 |
-|---|---|---|
-| [Elicitation](#elicitation--工具執行到一半停下來問人) | `createTicket` | 一次 tool call 橫跨兩條 HTTP request |
-| [Sampling](#sampling--server-不持有-api-key-卻能用-llm) | `troubleshootIssue` | 方向反過來，也因此埋了無限迴圈 |
-| [Progress](#progress--阻塞與回報在不同-thread-上並行) | `getTicketStatus` | 沒有 token 就收不到 |
-| [Logging](#logging--唯一能穿過-stdio-的訊息通道) | 三者皆有 | stdout 被協定佔用，log 只能走協定本身 |
+| 能力                                                    | 對應工具            | 一句話                                |
+| ------------------------------------------------------- | ------------------- | ------------------------------------- |
+| [Elicitation](#elicitation--工具執行到一半停下來問人)   | `createTicket`      | 一次 tool call 橫跨兩條 HTTP request  |
+| [Sampling](#sampling--server-不持有-api-key-卻能用-llm) | `troubleshootIssue` | 方向反過來，也因此埋了無限迴圈        |
+| [Progress](#progress--阻塞與回報在不同-thread-上並行)   | `getTicketStatus`   | 沒有 token 就收不到                   |
+| [Logging](#logging--唯一能穿過-stdio-的訊息通道)        | 三者皆有            | stdout 被協定佔用，log 只能走協定本身 |
 
 之後補三則非能力類的設計說明：[stdio 潔淨](#設計說明一stdio-潔淨是整個-server-設定的主軸)、[兩層工具過濾](#設計說明二工具選擇有兩層職責完全不同)、[平台 profile](#設計說明三平台差異被關進-profile-裡)。
 
@@ -425,12 +425,12 @@ return "✅ 資料已收到，正在繼續處理，請稍候...";
 
 #### ④ 踩到的坑
 
-| 坑 | 後果 | 防法 |
-|---|---|---|
+| 坑                                   | 後果                                                                                   | 防法                                                                                  |
+| ------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `parserClient` 重用了主 `chatClient` | 「自然語言 → JSON」這步**自己觸發巢狀 tool call**，而它正被一個未完成的 tool call 包著 | `ChatClient.Builder` 是 prototype scope，constructor 注入兩個參數就會拿到兩個獨立實例 |
-| 三處超時沒對齊 | 使用者還在打字，協定層先掐斷 | client `request-timeout` / server JAR 的 `-D` 參數 / `future.get(...)` **都是 300s** |
-| `meta.username` 缺失 | 無法驗證所有權 | 直接回 `DECLINE`；`complete()` 與 `cancel()` 都做 `sessionId + owner` 雙重驗證 |
-| 使用者中途按 F5 | SSE 重連後提示消失，server 白等 5 分鐘 | 訂閱時 replay `pendingForOwner()`；前端用 `seenElicitationSessionsRef` 去重 |
+| 三處超時沒對齊                       | 使用者還在打字，協定層先掐斷                                                           | client `request-timeout` / server JAR 的 `-D` 參數 / `future.get(...)` **都是 300s**  |
+| `meta.username` 缺失                 | 無法驗證所有權                                                                         | 直接回 `DECLINE`；`complete()` 與 `cancel()` 都做 `sessionId + owner` 雙重驗證        |
+| 使用者中途按 F5                      | SSE 重連後提示消失，server 白等 5 分鐘                                                 | 訂閱時 replay `pendingForOwner()`；前端用 `seenElicitationSessionsRef` 去重           |
 
 取消走的是**獨立端點** `POST /elicitation/{sessionId}/cancel`（`future.cancel(true)` → handler 收到 `CancellationException` → 回 `CANCEL`）。明確的取消不需要 LLM 解析，沒理由再燒一次 token。
 
@@ -572,11 +572,11 @@ MCP over stdio 表示 **stdin/stdout 就是傳輸層**。任何多印一行的 `
 
 而 Spring Boot 的預設行為恰恰相反 —— 開機就往 stdout 噴 banner 與數十行啟動 log。Server 的 `application.properties` 因此整份都在做同一件事：
 
-| 設定 | 作用 |
-|---|---|
+| 設定                                    | 作用                                               |
+| --------------------------------------- | -------------------------------------------------- |
 | `spring.main.web-application-type=none` | 不啟動 embedded Tomcat（不需要，也少一批啟動 log） |
-| `logging.level.root=error` | 壓掉 INFO/DEBUG/WARN 的啟動洪流 |
-| `spring.main.banner-mode=off` | 關掉 ASCII banner |
+| `logging.level.root=error`              | 壓掉 INFO/DEBUG/WARN 的啟動洪流                    |
+| `spring.main.banner-mode=off`           | 關掉 ASCII banner                                  |
 
 > ⚠️ Server **沒有** 自訂的 `logback-spring.xml` —— 潔淨完全倚賴上述三個 property。這代表 **ERROR 等級的 log 仍會走預設 appender 印到 stdout**。子專案的 `CLAUDE.md` 與舊版 `README.txt` 稱「logback 已導向 `System.err`」，但該設定檔目前並不存在。要補強的話，應新增 logback 設定把 `ConsoleAppender` 的 `target` 設為 `System.err`。
 
@@ -584,14 +584,14 @@ MCP over stdio 表示 **stdin/stdout 就是傳輸層**。任何多印一行的 `
 
 三個 MCP server 加起來工具數量可觀（光 github 就數十個）。全丟給 LLM 會造成 prompt 膨脹，也可能讓 LLM 在 filesystem 頁誤用 github 工具。兩層機制各司其職，**別混為一談**：
 
-| | `McpServerToolFilter` | `ToolUtil.selectToolsFor()` |
-|---|---|---|
-| 形式 | Spring bean（實作 `McpToolFilter`） | 靜態 helper 方法 |
-| 範圍 | **全域**，影響所有 request | **單次**，只影響呼叫處 |
+|      | `McpServerToolFilter`                                                | `ToolUtil.selectToolsFor()`                 |
+| ---- | -------------------------------------------------------------------- | ------------------------------------------- |
+| 形式 | Spring bean（實作 `McpToolFilter`）                                  | 靜態 helper 方法                            |
+| 範圍 | **全域**，影響所有 request                                           | **單次**，只影響呼叫處                      |
 | 時機 | lazy — 首次 LLM request 時執行並快取，僅 `McpToolsChangedEvent` 重跑 | 各 controller 的 constructor 呼叫一次並快取 |
-| 設定 | `application.properties` 的 `mcp.tool-filter.blocked-*` | 程式碼中的 server / tool hint |
-| 比對 | server 名稱 `contains` ／ tool 名稱 `startsWith` | 兩者皆 `contains`（不分大小寫） |
-| 語意 | 「這個工具**誰都不准**用」 | 「這個端點**只看得到**這些工具」 |
+| 設定 | `application.properties` 的 `mcp.tool-filter.blocked-*`              | 程式碼中的 server / tool hint               |
+| 比對 | server 名稱 `contains` ／ tool 名稱 `startsWith`                     | 兩者皆 `contains`（不分大小寫）             |
+| 語意 | 「這個工具**誰都不准**用」                                           | 「這個端點**只看得到**這些工具」            |
 
 `blocked-servers` 與 `blocked-tool-prefixes` 目前都留空（全放行），保留設定點方便隨時封鎖 —— 例如把 `write_`、`delete_` 加進前綴清單，就能在**不動任何 Java 程式碼**的情況下讓所有寫入類工具消失。
 
@@ -624,49 +624,49 @@ app.run(args);
 
 ### Server — `mySpringAi_MCP_Server_stdio`
 
-| 項目 | 版本／artifact | 備註 |
-|---|---|---|
-| Java | **25** | `pom.xml` 的 `java.version` |
-| Spring Boot | **4.1.0** | `spring-boot-starter-parent` |
-| Spring AI | **2.0.0** | 由 `spring-ai-bom` 匯入 |
-| MCP | `spring-ai-starter-mcp-server` | ⚠️ **stdio 方向** —— client 啟動你的 Java process，走 stdin/stdout。若要當 HTTP server 供遠端連線，需改用 `spring-ai-starter-mcp-server-webmvc` |
-| 持久化 | `spring-boot-starter-data-jpa` + `h2` | 檔案式 DB，`AUTO_SERVER=true` |
-| H2 Console | `spring-boot-h2console` | ⚠️ Boot 4 起被抽成獨立模組，但本專案 `web-application-type=none` 讓它**不會啟動** |
-| Web | `spring-boot-starter-webmvc` | ⚠️ 同上，被 `none` 抵銷，屬未生效依賴 |
+| 項目        | 版本／artifact                        | 備註                                                                                                                                            |
+| ----------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Java        | **25**                                | `pom.xml` 的 `java.version`                                                                                                                     |
+| Spring Boot | **4.1.0**                             | `spring-boot-starter-parent`                                                                                                                    |
+| Spring AI   | **2.0.0**                             | 由 `spring-ai-bom` 匯入                                                                                                                         |
+| MCP         | `spring-ai-starter-mcp-server`        | ⚠️ **stdio 方向** —— client 啟動你的 Java process，走 stdin/stdout。若要當 HTTP server 供遠端連線，需改用 `spring-ai-starter-mcp-server-webmvc` |
+| 持久化      | `spring-boot-starter-data-jpa` + `h2` | 檔案式 DB，`AUTO_SERVER=true`                                                                                                                   |
+| H2 Console  | `spring-boot-h2console`               | ⚠️ Boot 4 起被抽成獨立模組，但本專案 `web-application-type=none` 讓它**不會啟動**                                                               |
+| Web         | `spring-boot-starter-webmvc`          | ⚠️ 同上，被 `none` 抵銷，屬未生效依賴                                                                                                           |
 
 ### Client — `mySpringAi_MCP_Client`
 
-| 項目 | 版本／artifact | 備註 |
-|---|---|---|
-| Java / Boot / Spring AI | 同 Server（**25 / 4.1.0 / 2.0.0**） | 兩份 pom 必須鎖同版號 |
-| MCP | `spring-ai-starter-mcp-client` | 成為 MCP host，把多個 server 的 tools 轉成 `ToolCallbackProvider` |
-| LLM | `spring-ai-starter-model-openai` · `gpt-4o-mini` | ⚠️ 設定 key 是 `chat.model`，**不是** `chat.options.model` |
-| Web + SSE | `spring-boot-starter-webmvc` | Boot 4 的新命名（不再是 `-web`）；`SseEmitter` 走同步 MVC |
-| 排程 | `@EnableScheduling` | SSE 的 15 秒心跳靠它 |
-| 測試 | `spring-boot-starter-webmvc-test` | 9 個 `@Test`，見 [測試覆蓋](#測試覆蓋) |
+| 項目                    | 版本／artifact                                   | 備註                                                              |
+| ----------------------- | ------------------------------------------------ | ----------------------------------------------------------------- |
+| Java / Boot / Spring AI | 同 Server（**25 / 4.1.0 / 2.0.0**）              | 兩份 pom 必須鎖同版號                                             |
+| MCP                     | `spring-ai-starter-mcp-client`                   | 成為 MCP host，把多個 server 的 tools 轉成 `ToolCallbackProvider` |
+| LLM                     | `spring-ai-starter-model-openai` · `gpt-4o-mini` | ⚠️ 設定 key 是 `chat.model`，**不是** `chat.options.model`        |
+| Web + SSE               | `spring-boot-starter-webmvc`                     | Boot 4 的新命名（不再是 `-web`）；`SseEmitter` 走同步 MVC         |
+| 排程                    | `@EnableScheduling`                              | SSE 的 15 秒心跳靠它                                              |
+| 測試                    | `spring-boot-starter-webmvc-test`                | 9 個 `@Test`，見 [測試覆蓋](#測試覆蓋)                            |
 
 > ⚠️ **升級 Spring AI 必須兩邊一起動。** `@McpElicitation` / `@McpSampling` / `@McpLogging` / `@McpProgress` 的 API 表面在不同 milestone 間變動過（例如 `ElicitRequest` 拆成 `ElicitFormRequest` / `ElicitUrlRequest`）。只升一邊，錯誤會在 runtime 才浮現。
 
 ### 三個 MCP Server
 
-| Connection key | 形態 | 平台差異 | 需要的環境 |
-|---|---|---|---|
-| `helpdesk-ticket-mcp-server-stdio` | 自製 Spring Boot JAR | 無 | JDK 25 |
-| `filesystem` | npm 套件（`npx` 即時下載） | ⚠️ Windows 需 `cmd /c` | Node.js 20+ |
-| `github` | Docker image | 無 | Docker Desktop + PAT |
+| Connection key                     | 形態                       | 平台差異               | 需要的環境           |
+| ---------------------------------- | -------------------------- | ---------------------- | -------------------- |
+| `helpdesk-ticket-mcp-server-stdio` | 自製 Spring Boot JAR       | 無                     | JDK 25               |
+| `filesystem`                       | npm 套件（`npx` 即時下載） | ⚠️ Windows 需 `cmd /c` | Node.js 20+          |
+| `github`                           | Docker image               | 無                     | Docker Desktop + PAT |
 
 ### 前端 — `mcp-ui`
 
-| 技術 | 版本 | 實際用法 |
-|---|---|---|
-| React | 19.2 | 全函數元件 + Hooks，3 個頁面 |
-| Vite | 8.1 | `:5173`；`/api` proxy 至 `:8080`，**不 rewrite** |
-| React Router | 7.18 | 3 條路由，`/` → `/helpdesk-chat` |
-| Axios | 1.18 | 單一實例，`baseURL: /api` |
-| EventSource | 瀏覽器原生 | SSE 長連線，非第三方套件 |
-| ESLint | 10.6 | flat config，`react-hooks` + `react-refresh` |
-| 狀態管理 | — | React Context → `localStorage`，**無 Redux** |
-| 樣式 | — | 原生 CSS 變數，Cyberpunk 主題（`#05010d` / `#00f0ff` / `#ff2bd6`），等寬字體 |
+| 技術         | 版本       | 實際用法                                                                     |
+| ------------ | ---------- | ---------------------------------------------------------------------------- |
+| React        | 19.2       | 全函數元件 + Hooks，3 個頁面                                                 |
+| Vite         | 8.1        | `:5173`；`/api` proxy 至 `:8080`，**不 rewrite**                             |
+| React Router | 7.18       | 3 條路由，`/` → `/helpdesk-chat`                                             |
+| Axios        | 1.18       | 單一實例，`baseURL: /api`                                                    |
+| EventSource  | 瀏覽器原生 | SSE 長連線，非第三方套件                                                     |
+| ESLint       | 10.6       | flat config，`react-hooks` + `react-refresh`                                 |
+| 狀態管理     | —          | React Context → `localStorage`，**無 Redux**                                 |
+| 樣式         | —          | 原生 CSS 變數，Cyberpunk 主題（`#05010d` / `#00f0ff` / `#ff2bd6`），等寬字體 |
 
 > ⚠️ 前端**無測試框架**（無 vitest／jest），`npm test` 不存在。
 
@@ -676,24 +676,24 @@ app.run(args);
 
 ### 環境需求
 
-| | 用途 | 缺了會怎樣 |
-|---|---|---|
-| **JDK 25** | Server 與 Client | 無法編譯 |
-| **Node.js 20+** | 前端 + filesystem server 的 `npx` | filesystem 頁失效 |
-| **Docker Desktop** | github MCP server | github 頁失效 |
-| **OpenAI API Key** | 所有聊天端點 | app 照常啟動，呼叫時才失敗 |
-| GitHub PAT | 僅 github 頁 | 該頁失效 |
-| Maven | — | 已內建 wrapper，不需另裝 |
+|                    | 用途                              | 缺了會怎樣                 |
+| ------------------ | --------------------------------- | -------------------------- |
+| **JDK 25**         | Server 與 Client                  | 無法編譯                   |
+| **Node.js 20+**    | 前端 + filesystem server 的 `npx` | filesystem 頁失效          |
+| **Docker Desktop** | github MCP server                 | github 頁失效              |
+| **OpenAI API Key** | 所有聊天端點                      | app 照常啟動，呼叫時才失敗 |
+| GitHub PAT         | 僅 github 頁                      | 該頁失效                   |
+| Maven              | —                                 | 已內建 wrapper，不需另裝   |
 
 選用：**MCP Inspector**（單獨測 server）、**DataGrip / H2 工具**（看工單資料）。
 
 ### 環境變數
 
-| 變數 | 必要 | 說明 |
-|---|---|---|
-| `OPENAI_API_KEY` | ✅ | 以 `${OPENAI_API_KEY:}` 讀取，**未設定時 app 仍正常啟動** |
-| `GITHUB_PERSONAL_ACCESS_TOKEN` | 若用 github 頁 | Docker `-e` 帶入 container |
-| `MCP_FILESYSTEM_ROOT` | ❌ | 未設定則 fallback 到 Windows `%USERPROFILE%\Desktop\mymcp`／macOS `~/Desktop/mymcp` |
+| 變數                           | 必要           | 說明                                                                                |
+| ------------------------------ | -------------- | ----------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY`               | ✅             | 以 `${OPENAI_API_KEY:}` 讀取，**未設定時 app 仍正常啟動**                           |
+| `GITHUB_PERSONAL_ACCESS_TOKEN` | 若用 github 頁 | Docker `-e` 帶入 container                                                          |
+| `MCP_FILESYSTEM_ROOT`          | ❌             | 未設定則 fallback 到 Windows `%USERPROFILE%\Desktop\mymcp`／macOS `~/Desktop/mymcp` |
 
 ```powershell
 # Windows PowerShell
@@ -776,11 +776,11 @@ npm run dev
 
 下面這組對話**依序走完三種反向能力**，同時也是 [§1 畫面與 log 實錄](#畫面與-log-實錄) 的拍攝腳本：
 
-| # | 你輸入 | 觸發 | 你該看到 | 對應截圖 |
-|---|---|---|---|---|
-| 1 | 我的 Outlook 收不到新郵件，但網頁版可以正常收信 | `troubleshootIssue` → **Sampling** | 對得上 seed 資料 David 那筆的排障步驟 | `toubleshootissue.png`、`sampling-david-db.png` |
-| 2 | 試過了還是不行，幫我開單 | `getTicketStatus` → **Progress**，接著 `createTicket` → **Elicitation** | terminal 連續 10 行 `進度更新 - 已完成 N%`（約 10 秒），隨後 ⚠️ 追問泡泡 + 輸入框解鎖 + 取消鈕 | `client-terminal.png`、`elicitation.png` |
-| 3 | HIGH，0912-345-678 | elicitation 完成 | 「✅ 資料已收到」→ 隨後工單建立成功（含編號） | `complete-ticket.png`、`ticket-created-db.png` |
+| #   | 你輸入                                          | 觸發                                                                    | 你該看到                                                                                       | 對應截圖                                        |
+| --- | ----------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| 1   | 我的 Outlook 收不到新郵件，但網頁版可以正常收信 | `troubleshootIssue` → **Sampling**                                      | 對得上 seed 資料 David 那筆的排障步驟                                                          | `toubleshootissue.png`、`sampling-david-db.png` |
+| 2   | 試過了還是不行，幫我開單                        | `getTicketStatus` → **Progress**，接著 `createTicket` → **Elicitation** | terminal 連續 10 行 `進度更新 - 已完成 N%`（約 10 秒），隨後 ⚠️ 追問泡泡 + 輸入框解鎖 + 取消鈕 | `client-terminal.png`、`elicitation.png`        |
+| 3   | HIGH，0912-345-678                              | elicitation 完成                                                        | 「✅ 資料已收到」→ 隨後工單建立成功（含編號）                                                  | `complete-ticket.png`、`ticket-created-db.png`  |
 
 > 若 LLM 在第 2 步只查了工單、先問你「是否要開單」而沒直接呼叫 `createTicket`，回一句「確認開單」即可觸發 elicitation。
 
@@ -817,23 +817,23 @@ npm run preview
 
 > 📌 前端走 Vite proxy 時路徑不變（`/api/helpdesk/chat`）—— 本專案的 proxy **不做 rewrite**，後端 `@RequestMapping` 本身就含 `/api`。curl / Postman 直打後端時路徑完全相同。
 
-| Method | Path | Body | 說明 |
-|---|---|---|---|
-| `POST` | `/api/helpdesk/chat` | `{ message, sessionId? }` | `sessionId` 僅在回覆 elicitation 時帶。若該 username 有 pending session 卻沒帶，會被擋下並提示先完成或取消 |
-| `GET` | `/api/helpdesk/elicitation/stream?username=<name>` | — | **SSE**。訂閱後平時沉默；訂閱當下會 replay 該 owner 的 pending session |
-| `POST` | `/api/helpdesk/elicitation/{sessionId}/cancel` | — | `future.cancel(true)` → 回 `CANCEL` 給 server → server 改用預設值繼續建單 |
-| `POST` | `/api/filesystem/chat` | `{ message }` | 只掛 filesystem 工具 |
-| `POST` | `/api/github/chat` | `{ message }` | 只掛 github 工具 |
+| Method | Path                                               | Body                      | 說明                                                                                                       |
+| ------ | -------------------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/helpdesk/chat`                               | `{ message, sessionId? }` | `sessionId` 僅在回覆 elicitation 時帶。若該 username 有 pending session 卻沒帶，會被擋下並提示先完成或取消 |
+| `GET`  | `/api/helpdesk/elicitation/stream?username=<name>` | —                         | **SSE**。訂閱後平時沉默；訂閱當下會 replay 該 owner 的 pending session                                     |
+| `POST` | `/api/helpdesk/elicitation/{sessionId}/cancel`     | —                         | `future.cancel(true)` → 回 `CANCEL` 給 server → server 改用預設值繼續建單                                  |
+| `POST` | `/api/filesystem/chat`                             | `{ message }`             | 只掛 filesystem 工具                                                                                       |
+| `POST` | `/api/github/chat`                                 | `{ message }`             | 只掛 github 工具                                                                                           |
 
 三個端點共用同一個 record `ChatPayload { message, sessionId }`（後兩者不使用 `sessionId`）。回應皆為純文字 `String`，非 JSON 包裝。
 
 ### MCP Tool 總表（helpdesk server）
 
-| Tool | 參數 | 反向能力 | 行為 |
-|---|---|---|---|
-| `createTicket` | `issue`, `username` | **Elicitation** | 先 `ctx.elicitEnabled()` 判斷；收集 `priority` + `contactPhone`，不支援或取消則退回 `MEDIUM` / `N/A`。寫入 H2（`status=OPEN`、`eta=now+7d`） |
-| `getTicketStatus` | `username` | **Progress** | 查該使用者所有工單，並在 10 次迴圈中每秒 `ctx.progress()` 一次（10%→100%） |
-| `troubleshootIssue` | `issue`, `username` | **Sampling** | 先 `ctx.sampleEnabled()` 判斷；撈 `status=CLOSED` 且有 `resolution` 的工單組知識庫 |
+| Tool                | 參數                | 反向能力        | 行為                                                                                                                                         |
+| ------------------- | ------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createTicket`      | `issue`, `username` | **Elicitation** | 先 `ctx.elicitEnabled()` 判斷；收集 `priority` + `contactPhone`，不支援或取消則退回 `MEDIUM` / `N/A`。寫入 H2（`status=OPEN`、`eta=now+7d`） |
+| `getTicketStatus`   | `username`          | **Progress**    | 查該使用者所有工單，並在 10 次迴圈中每秒 `ctx.progress()` 一次（10%→100%）                                                                   |
+| `troubleshootIssue` | `issue`, `username` | **Sampling**    | 先 `ctx.sampleEnabled()` 判斷；撈 `status=CLOSED` 且有 `resolution` 的工單組知識庫                                                           |
 
 三者都用 `info(ctx, msg)` helper 同時發 `ctx.log()` 與本地 `log.info()`。方法刻意宣告為 **package-private** —— 它們由 Spring AI 透過 reflection 呼叫，不該被其他 Java 程式碼直接使用。
 
@@ -860,37 +860,37 @@ data: {
 
 **Server**
 
-| Property | 值 | 說明 |
-|---|---|---|
-| `spring.ai.mcp.server.name` | `mySpringAi_MCP_Server_stdio` | ⚠️ `ToolUtil` 比對的就是這個，不是 connection key |
-| `spring.main.web-application-type` | `none` | 不啟動 Tomcat |
-| `logging.level.root` | `error` | stdout 潔淨 |
-| `spring.main.banner-mode` | `off` | 同上 |
-| `spring.datasource.url` | `jdbc:h2:file:./h2db/mcpserver_stdio;AUTO_SERVER=true` | **相對路徑 —— 落點取決於啟動時的工作目錄** |
-| `spring.jpa.hibernate.ddl-auto` | `update` | 本地開發用 |
+| Property                           | 值                                                     | 說明                                              |
+| ---------------------------------- | ------------------------------------------------------ | ------------------------------------------------- |
+| `spring.ai.mcp.server.name`        | `mySpringAi_MCP_Server_stdio`                          | ⚠️ `ToolUtil` 比對的就是這個，不是 connection key |
+| `spring.main.web-application-type` | `none`                                                 | 不啟動 Tomcat                                     |
+| `logging.level.root`               | `error`                                                | stdout 潔淨                                       |
+| `spring.main.banner-mode`          | `off`                                                  | 同上                                              |
+| `spring.datasource.url`            | `jdbc:h2:file:./h2db/mcpserver_stdio;AUTO_SERVER=true` | **相對路徑 —— 落點取決於啟動時的工作目錄**        |
+| `spring.jpa.hibernate.ddl-auto`    | `update`                                               | 本地開發用                                        |
 
 **Client**
 
-| Property | 值 | 說明 |
-|---|---|---|
-| `spring.ai.openai.chat.model` | `gpt-4o-mini` | ⚠️ 是 `chat.model`，**不是** `chat.options.model` |
-| `spring.ai.mcp.client.request-timeout` | `300s` | ⚠️ 需與 server JAR 的 `-Dspring.ai.mcp.server.request-timeout=300s` 及 `future.get(5, MINUTES)` 三處對齊 |
-| `...stdio.connections.<key>.command` / `.args[n]` | 見 profile 檔 | ⚠️ `<key>` 就是四個 `@Mcp*` annotation 的 `clients` 值 |
-| `mcp.tool-filter.blocked-servers` | *（空）* | `contains` 比對，命中則該 server 全部工具封鎖 |
-| `mcp.tool-filter.blocked-tool-prefixes` | *（空）* | `startsWith` 比對，僅封鎖該 tool |
-| `logging.level.…PrettyLoggerAdvisor` | `DEBUG` | 不設 DEBUG 就看不到格式化的 prompt／回應 |
+| Property                                          | 值            | 說明                                                                                                     |
+| ------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------- |
+| `spring.ai.openai.chat.model`                     | `gpt-4o-mini` | ⚠️ 是 `chat.model`，**不是** `chat.options.model`                                                        |
+| `spring.ai.mcp.client.request-timeout`            | `300s`        | ⚠️ 需與 server JAR 的 `-Dspring.ai.mcp.server.request-timeout=300s` 及 `future.get(5, MINUTES)` 三處對齊 |
+| `...stdio.connections.<key>.command` / `.args[n]` | 見 profile 檔 | ⚠️ `<key>` 就是四個 `@Mcp*` annotation 的 `clients` 值                                                   |
+| `mcp.tool-filter.blocked-servers`                 | _（空）_      | `contains` 比對，命中則該 server 全部工具封鎖                                                            |
+| `mcp.tool-filter.blocked-tool-prefixes`           | _（空）_      | `startsWith` 比對，僅封鎖該 tool                                                                         |
+| `logging.level.…PrettyLoggerAdvisor`              | `DEBUG`       | 不設 DEBUG 就看不到格式化的 prompt／回應                                                                 |
 
 ### 測試覆蓋
 
 全 repo 共 **9 個 `@Test`**。值得注意的是：**elicitation 的跨使用者隔離與冪等性是有測試保護的**。
 
-| 測試類別 | 數量 | 實際驗證什麼 |
-|---|---|---|
-| `ElicitationSessionStoreTest` | 3 | ① Bob 無法 cancel Annie 的 session；cancel 後 future 拋 `CancellationException`；重複 cancel 回 false<br/>② Bob 無法 complete Annie 的 session；complete 後不可再 cancel<br/>③ `pendingForOwner` 只回該 owner 的；`findPending` 跨 owner 查詢回 empty |
-| `HelpDeskElicitationProviderTest` | 3 | future 被取消 → `CANCEL`；future 已完成 → `ACCEPT` + 資料；缺 `meta.username` → `DECLINE` 且**完全不碰 SSE 與 sessionStore** |
-| `HelpDeskControllerTest` | 1 | cancel 端點的 404（錯 owner）→ 200（首次）→ 404（重複）序列 |
-| `MySpringAiMcpClientApplicationTests` | 1 | `contextLoads` |
-| `MySpringAiMcpServerStdioApplicationTests` | 1 | `contextLoads` |
+| 測試類別                                   | 數量 | 實際驗證什麼                                                                                                                                                                                                                                          |
+| ------------------------------------------ | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ElicitationSessionStoreTest`              | 3    | ① Bob 無法 cancel Annie 的 session；cancel 後 future 拋 `CancellationException`；重複 cancel 回 false<br/>② Bob 無法 complete Annie 的 session；complete 後不可再 cancel<br/>③ `pendingForOwner` 只回該 owner 的；`findPending` 跨 owner 查詢回 empty |
+| `HelpDeskElicitationProviderTest`          | 3    | future 被取消 → `CANCEL`；future 已完成 → `ACCEPT` + 資料；缺 `meta.username` → `DECLINE` 且**完全不碰 SSE 與 sessionStore**                                                                                                                          |
+| `HelpDeskControllerTest`                   | 1    | cancel 端點的 404（錯 owner）→ 200（首次）→ 404（重複）序列                                                                                                                                                                                           |
+| `MySpringAiMcpClientApplicationTests`      | 1    | `contextLoads`                                                                                                                                                                                                                                        |
+| `MySpringAiMcpServerStdioApplicationTests` | 1    | `contextLoads`                                                                                                                                                                                                                                        |
 
 > ⚠️ **`MySpringAiMcpClientApplicationTests` 是 `@SpringBootTest`** —— 它會真的啟動完整 context，也就是真的去 spawn 三個 MCP stdio 子行程。**沒有 Docker / Node 環境時，`mvnw test` 會失敗或掛住**。要跑純單元測試請指定類別：`.\mvnw.cmd -Dtest=ElicitationSessionStoreTest test`。
 
@@ -904,11 +904,11 @@ cd mySpringAi_MCP_Server_stdio
 npx @modelcontextprotocol/inspector
 ```
 
-| Inspector 欄位 | 值 |
-|---|---|
-| Transport | `stdio` |
-| Command | `java` |
-| Arguments | `-jar D:\...\target\mySpringAi_MCP_Server_stdio-0.0.1-SNAPSHOT.jar` |
+| Inspector 欄位 | 值                                                                  |
+| -------------- | ------------------------------------------------------------------- |
+| Transport      | `stdio`                                                             |
+| Command        | `java`                                                              |
+| Arguments      | `-jar D:\...\target\mySpringAi_MCP_Server_stdio-0.0.1-SNAPSHOT.jar` |
 
 > 📌 Inspector **支援 elicitation 與 sampling**，會彈出對應的互動介面 —— 這是驗證「server 端能力宣告是否正確」最快的方式，不必牽扯整條 React + SSE 鏈路。
 
@@ -916,52 +916,52 @@ npx @modelcontextprotocol/inspector
 
 表名 `HELP_DESK_TICKETS`：
 
-| 欄位 | 型別 | 說明 |
-|---|---|---|
-| `id` | `Long`（IDENTITY） | 工單編號 |
-| `username` | `String` | 所屬使用者 |
-| `issue` | `String` | 問題描述 |
-| `status` | `String` | `OPEN` ／ `IN_PROGRESS` ／ `CLOSED` |
-| `priority` | `String` | **由 elicitation 收集**，預設 `MEDIUM` |
-| `contactPhone` | `String` | 同上，未提供則 `N/A` |
-| `createdAt` / `eta` | `LocalDateTime` | 建立時間 ／ 預計完成（`createdAt + 7d`） |
-| `resolution` | `String(1000)` | **`troubleshootIssue` 的知識庫來源** |
+| 欄位                | 型別               | 說明                                     |
+| ------------------- | ------------------ | ---------------------------------------- |
+| `id`                | `Long`（IDENTITY） | 工單編號                                 |
+| `username`          | `String`           | 所屬使用者                               |
+| `issue`             | `String`           | 問題描述                                 |
+| `status`            | `String`           | `OPEN` ／ `IN_PROGRESS` ／ `CLOSED`      |
+| `priority`          | `String`           | **由 elicitation 收集**，預設 `MEDIUM`   |
+| `contactPhone`      | `String`           | 同上，未提供則 `N/A`                     |
+| `createdAt` / `eta` | `LocalDateTime`    | 建立時間 ／ 預計完成（`createdAt + 7d`） |
+| `resolution`        | `String(1000)`     | **`troubleshootIssue` 的知識庫來源**     |
 
 > ⚠️ **H2 檔案的落點取決於誰啟動了 Server。** JDBC URL 是相對路徑 `./h2db/mcpserver_stdio`，而 server 是被 client 以子行程拉起、繼承 client 的工作目錄 —— 所以正常全端啟動時檔案在 **`mySpringAi_MCP_Client/h2db/`**，而非 server 專案目錄下。只有用 Inspector 從 server 目錄直接 `java -jar` 時才會寫到 `mySpringAi_MCP_Server_stdio/h2db/`。**兩種啟動方式看到的是兩份不同的資料。**
 
-| 連線欄位 | 值 |
-|---|---|
+| 連線欄位 | 值                                                                                |
+| -------- | --------------------------------------------------------------------------------- |
 | JDBC URL | `jdbc:h2:file:<repo>/mySpringAi_MCP_Client/h2db/mcpserver_stdio;AUTO_SERVER=TRUE` |
-| Driver | `org.h2.Driver` |
-| Username | `sa` |
-| Password | *（留空）* |
+| Driver   | `org.h2.Driver`                                                                   |
+| Username | `sa`                                                                              |
+| Password | _（留空）_                                                                        |
 
 首次啟動時 `DataInitializer` seed **9 筆 `status=CLOSED` 且含 `resolution` 的工單**（Alice 登入轉圈、Bob VPN 斷線、Carol 印表機離線、David Outlook 收信、Eve 黑畫面、Frank 帳號鎖定、Grace 驗證碼錯誤、Henry SSO 500、Iris 裝置未受信任）。判斷依據是 `findByStatus("CLOSED").isEmpty()` —— **只要庫裡已有任一筆 CLOSED 就跳過 seed**。
 
 ### 疑難排解
 
-| 症狀 | 原因與處理 |
-|---|---|
-| 啟動 log 顯示「共開放 0 個 tools」 | 該 MCP server 沒連上，三種來源各有不同原因 ↓ |
-| └ helpdesk 是 0 | JAR 不存在或路徑錯 —— 確認 `mcp-server-stdio/*.jar` 存在，且 Client 從 `mySpringAi_MCP_Client/` 啟動（args 用相對路徑） |
-| └ filesystem 是 0（Windows） | `npx` 沒被 `cmd /c` 包住 —— 確認啟用的是 `windows` profile |
-| └ github 是 0 | Docker 未啟動，或 `GITHUB_PERSONAL_ACCESS_TOKEN` 未設 |
-| └ **三個都是 0** | profile 根本沒載入 —— 確認兩段式 `main()` 未被重構掉，或明確帶 `-Dspring-boot.run.profiles=windows` |
-| 前端「送出」永遠灰的 | 未設 username，或 SSE 指示燈不是「已連線」（helpdesk 頁的 `disabled` 綁定 `sseStatus`） |
-| SSE 一直「連線中斷，重試中...」 | 後端未啟動，或 proxy 沒指到 `:8080`。前端每 2 秒重試 |
-| Elicitation 提示沒出現，AI 一直轉圈 | SSE push 時前端還沒訂閱。**重新整理即可** —— 訂閱時後端會 replay `pendingForOwner` |
-| Elicitation 回覆後沒反應 | `parserClient` 解析失敗（會回「❌ 無法解析您的輸入」）。session 仍 pending，換更明確的格式重打，例如 `HIGH，0912-345-678` |
-| Elicitation 等 5 分鐘自動取消 | `future.get(5, MINUTES)` 逾時 → `CANCEL` → server 用預設值建單。**屬預期行為** |
-| 工單查詢要等約 10 秒 | `getTicketStatus` 內含刻意的 `Thread.sleep(1000)` ×10 用來示範 progress。**屬預期行為** |
-| Progress log 完全沒出現 | 只有 `HelpDeskController` 放了 `progressToken`，另外兩個端點本來就收不到 |
-| Sampling 無限迴圈／token 暴衝 | `@McpSampling` handler 誤用了帶工具的 `ChatClient`，必須改注入 `ChatModel` |
-| MCP 通訊出現 JSON parse 錯誤 | server 有東西印到 stdout —— 檢查是否新增了 `System.out.println`，或調高了 `logging.level.root` |
-| 呼叫端點回 401／金鑰錯誤 | `OPENAI_API_KEY` 未設。預設空字串，**app 仍正常啟動**，呼叫時才失敗 |
-| `mvnw test` 失敗或掛住 | `MySpringAiMcpClientApplicationTests` 是 `@SpringBootTest`，會實際 spawn 三個子行程。改用 `-Dtest=<類別>` 跑單元測試 |
-| Server 改了程式但行為沒變 | 忘了重打包並覆蓋 `mcp-server-stdio/*.jar`。**兩者不是 Maven 依賴** |
-| 工單資料「消失了」 | 兩種啟動方式寫到不同的 `h2db/` —— 見上方資料庫警告 |
-| `/h2-console` 連不上 | Server 設了 `web-application-type=none`，**console 不會啟動**。請用 DataGrip 等外部工具直連檔案 |
-| handler 完全不被觸發 | `@Mcp*` 的 `clients` 填成了 server 自報名稱。應填 **connection key** |
+| 症狀                                | 原因與處理                                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 啟動 log 顯示「共開放 0 個 tools」  | 該 MCP server 沒連上，三種來源各有不同原因 ↓                                                                              |
+| └ helpdesk 是 0                     | JAR 不存在或路徑錯 —— 確認 `mcp-server-stdio/*.jar` 存在，且 Client 從 `mySpringAi_MCP_Client/` 啟動（args 用相對路徑）   |
+| └ filesystem 是 0（Windows）        | `npx` 沒被 `cmd /c` 包住 —— 確認啟用的是 `windows` profile                                                                |
+| └ github 是 0                       | Docker 未啟動，或 `GITHUB_PERSONAL_ACCESS_TOKEN` 未設                                                                     |
+| └ **三個都是 0**                    | profile 根本沒載入 —— 確認兩段式 `main()` 未被重構掉，或明確帶 `-Dspring-boot.run.profiles=windows`                       |
+| 前端「送出」永遠灰的                | 未設 username，或 SSE 指示燈不是「已連線」（helpdesk 頁的 `disabled` 綁定 `sseStatus`）                                   |
+| SSE 一直「連線中斷，重試中...」     | 後端未啟動，或 proxy 沒指到 `:8080`。前端每 2 秒重試                                                                      |
+| Elicitation 提示沒出現，AI 一直轉圈 | SSE push 時前端還沒訂閱。**重新整理即可** —— 訂閱時後端會 replay `pendingForOwner`                                        |
+| Elicitation 回覆後沒反應            | `parserClient` 解析失敗（會回「❌ 無法解析您的輸入」）。session 仍 pending，換更明確的格式重打，例如 `HIGH，0912-345-678` |
+| Elicitation 等 5 分鐘自動取消       | `future.get(5, MINUTES)` 逾時 → `CANCEL` → server 用預設值建單。**屬預期行為**                                            |
+| 工單查詢要等約 10 秒                | `getTicketStatus` 內含刻意的 `Thread.sleep(1000)` ×10 用來示範 progress。**屬預期行為**                                   |
+| Progress log 完全沒出現             | 只有 `HelpDeskController` 放了 `progressToken`，另外兩個端點本來就收不到                                                  |
+| Sampling 無限迴圈／token 暴衝       | `@McpSampling` handler 誤用了帶工具的 `ChatClient`，必須改注入 `ChatModel`                                                |
+| MCP 通訊出現 JSON parse 錯誤        | server 有東西印到 stdout —— 檢查是否新增了 `System.out.println`，或調高了 `logging.level.root`                            |
+| 呼叫端點回 401／金鑰錯誤            | `OPENAI_API_KEY` 未設。預設空字串，**app 仍正常啟動**，呼叫時才失敗                                                       |
+| `mvnw test` 失敗或掛住              | `MySpringAiMcpClientApplicationTests` 是 `@SpringBootTest`，會實際 spawn 三個子行程。改用 `-Dtest=<類別>` 跑單元測試      |
+| Server 改了程式但行為沒變           | 忘了重打包並覆蓋 `mcp-server-stdio/*.jar`。**兩者不是 Maven 依賴**                                                        |
+| 工單資料「消失了」                  | 兩種啟動方式寫到不同的 `h2db/` —— 見上方資料庫警告                                                                        |
+| `/h2-console` 連不上                | Server 設了 `web-application-type=none`，**console 不會啟動**。請用 DataGrip 等外部工具直連檔案                           |
+| handler 完全不被觸發                | `@Mcp*` 的 `clients` 填成了 server 自報名稱。應填 **connection key**                                                      |
 
 ### 已知的刻意取捨
 
@@ -985,8 +985,8 @@ npx @modelcontextprotocol/inspector
 
 ### 相關文件
 
-| 檔案 | 用途 |
-|---|---|
-| [`CLAUDE.md`](./CLAUDE.md) | 跨專案總覽（Claude Code 用） |
-| [`mySpringAi_MCP_Server_stdio/CLAUDE.md`](./mySpringAi_MCP_Server_stdio/CLAUDE.md) · [`mySpringAi_MCP_Client/CLAUDE.md`](./mySpringAi_MCP_Client/CLAUDE.md) · [`mcp-ui/CLAUDE.md`](./mcp-ui/CLAUDE.md) | 各層架構細節 |
-| [`AGENTS.md`](./AGENTS.md) 及各子專案的 `AGENTS.md` | commit / PR / 測試規範（Codex 等 agent 用） |
+| 檔案                                                                                                                                                                                                   | 用途                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| [`CLAUDE.md`](./CLAUDE.md)                                                                                                                                                                             | 跨專案總覽（Claude Code 用）                |
+| [`mySpringAi_MCP_Server_stdio/CLAUDE.md`](./mySpringAi_MCP_Server_stdio/CLAUDE.md) · [`mySpringAi_MCP_Client/CLAUDE.md`](./mySpringAi_MCP_Client/CLAUDE.md) · [`mcp-ui/CLAUDE.md`](./mcp-ui/CLAUDE.md) | 各層架構細節                                |
+| [`AGENTS.md`](./AGENTS.md) 及各子專案的 `AGENTS.md`                                                                                                                                                    | commit / PR / 測試規範（Codex 等 agent 用） |
