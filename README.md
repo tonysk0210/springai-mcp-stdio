@@ -136,19 +136,19 @@ stateDiagram-v2
     檢查owner --> DECLINE: meta.username 缺失
     檢查owner --> Pending: register() + SSE push
 
-    Pending --> ACCEPT: 使用者回覆<br/>complete(id, owner, data)
-    Pending --> CANCEL_按鈕: 按下取消<br/>cancel(id, owner)
-    Pending --> CANCEL_逾時: 5 分鐘無回應<br/>expire(id)
+    Pending --> ACCEPT: 使用者送出 priority 與 contactPhone<br/>complete(sessionId, owner, data)
+    Pending --> CANCEL_按鈕: 按下取消<br/>cancel(sessionId, owner)
+    Pending --> CANCEL_逾時: 5 分鐘無回應<br/>expire(sessionId)
     Pending --> DECLINE: 非預期例外
 
     ACCEPT --> [*]: 工具拿到資料，繼續建單
     CANCEL_按鈕 --> [*]: 改用預設值 MEDIUM / N.A.
-    CANCEL_逾時 --> [*]: 同上
+    CANCEL_逾時 --> [*]: 改用預設值 MEDIUM / N.A.
     DECLINE --> [*]: 本次 elicitation 失敗
 
     note right of Pending
         thread 凍結於 future.get(5, MINUTES)
-        使用者的答案走「另一條 HTTP request」進來
+        使用者以另一條 POST /api/helpdesk/chat request 提交答案
     end note
 ```
 
@@ -256,7 +256,7 @@ flowchart TB
         end
         subgraph CO["Elicitation 協調層"]
             direction LR
-            SS["ElicitationSessionStore<br/>id → CompletableFuture"]
+            SS["ElicitationSessionStore<br/>sessionId → CompletableFuture"]
             SE["ElicitationSseService<br/>owner → emitters + 15s 心跳"]
         end
         ADV["Advisor 鏈：TokenAudit(-1) → PrettyLogger(0) → ChatMemory"]
@@ -344,7 +344,7 @@ springai_mcp_clientapp_stdio/
 │   │   ├── HelpDeskSamplingProvider       ★ @McpSampling — 注入 ChatModel 而非 ChatClient
 │   │   ├── HelpDeskToolProgressListener     @McpProgress
 │   │   ├── HelpDeskLogBridge                @McpLogging → SLF4J
-│   │   ├── ElicitationSessionStore        ★ id → CompletableFuture，owner 驗證
+│   │   ├── ElicitationSessionStore        ★ sessionId → CompletableFuture，owner 驗證
 │   │   ├── ElicitationSseService            per-owner emitter + 15 秒心跳
 │   │   ├── McpServerToolFilter              全域封鎖（bean）
 │   │   └── ToolUtil                         per-request 精選（靜態方法）
