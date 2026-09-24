@@ -240,20 +240,21 @@ flowchart TB
             C2["FileSystemMcpController"]
             C3["GithubMcpController"]
         end
-        subgraph RH["四個反向能力 handler"]
+        subgraph RH["四個反向能力 handler（皆限定 helpdesk server）"]
             direction LR
-            H1["@McpElicitation"]
-            H2["@McpSampling"]
-            H3["@McpProgress"]
-            H4["@McpLogging"]
+            H1["@McpElicitation<br/>HelpDeskElicitationProvider"]
+            H2["@McpSampling<br/>HelpDeskSamplingProvider"]
+            H3["@McpProgress<br/>HelpDeskToolProgressListener"]
+            H4["@McpLogging<br/>HelpDeskLogBridge"]
         end
         subgraph CO["Elicitation 協調層"]
             direction LR
             SS["ElicitationSessionStore<br/>sessionId → CompletableFuture"]
             SE["ElicitationSseService<br/>owner → emitters + 15s 心跳"]
         end
-        ADV["Advisor 鏈：TokenAudit(-1) → PrettyLogger(0) → ChatMemory"]
-        FILT["McpServerToolFilter（全域 bean）<br/>ToolUtil.selectToolsFor（per-request）"]
+        ADV["Advisor 鏈（外 → 內）<br/>ChatMemory(MIN+200) → TokenAudit(-1) → PrettyLogger(0)"]
+        FILT["McpServerToolFilter（全域黑名單）<br/>ToolUtil.selectToolsFor（建構時各挑一個 server）"]
+        LOG["Client terminal log"]
     end
 
     subgraph SRV["三個 MCP Server · 皆為 stdio 子行程"]
@@ -261,24 +262,33 @@ flowchart TB
         S1["helpdesk<br/>java -jar"]
         S2["filesystem<br/>npx"]
         S3["github<br/>docker"]
+        DB[("H2 檔案 DB")]
     end
 
-    DB[("H2 檔案 DB")]
     OAI["OpenAI gpt-4o-mini"]
 
     FE --> PROXY --> CTRL
-    HP -.EventSource.-> SE
     CTRL --> ADV --> OAI
     CTRL --> FILT
-    C1 ==>|stdio JSON-RPC| S1
-    C2 ==>|stdio JSON-RPC| S2
-    C3 ==>|stdio JSON-RPC| S3
-    S1 -.四種反向呼叫.-> RH
+    C1 ==>|"stdio · tools/call"| S1
+    C2 ==>|"stdio · tools/call"| S2
+    C3 ==>|"stdio · tools/call"| S3
     S1 --> DB
-    H1 <--> SS
-    H1 --> SE
-    H2 --> OAI
-    C1 <--> SS
+
+    S1 -.->|"elicitation/create<br/>request，等回覆"| H1
+    S1 -.->|"sampling/createMessage<br/>request，等回覆"| H2
+    S1 -.->|"notifications/progress<br/>單向通知"| H3
+    S1 -.->|"notifications/message<br/>單向通知"| H4
+    H2 -->|"ChatModel 直呼<br/>繞過 Advisor"| OAI
+    H3 --> LOG
+    H4 --> LOG
+
+    H1 -->|"① register<br/>② future.get() 阻塞"| SS
+    H1 -->|"③ push 追問"| SE
+    SE -.->|"④ SSE event: elicitation"| HP
+    C1 -->|"subscribe<br/>重連補推 pending"| SE
+    C1 -->|"⑤ complete / cancel<br/>喚醒阻塞的 thread"| SS
+    C1 -->|"parserClient<br/>回覆 → JSON"| OAI
 
     style FE fill:#e6f7fb,stroke:#0288a8,color:#0b2530
     style BE fill:#fdeef7,stroke:#c2185b,color:#3a0b22
