@@ -130,22 +130,32 @@ flowchart LR
 `ElicitationSessionStore` 裡每個 session 就是一個 `CompletableFuture`。它有四種結束方式，而**每一種都對應一個不同的 MCP `ElicitResult.Action`**：
 
 ```mermaid
-flowchart TD
-    START([server 發出 ElicitRequest]) --> CHECK{檢查 owner}
-    CHECK -->|meta.username 缺失| DECLINE[DECLINE<br/>本次 elicitation 失敗]
-    CHECK -->|建立 session 並 SSE 推送| PENDING[Pending<br/>thread 等待 CompletableFuture，最多 5 分鐘<br/>使用者的答案走另一條 HTTP request 進來]
+stateDiagram-v2
+    [*] --> 檢查owner: server 發出 ElicitRequest
 
-    PENDING --> ACCEPT[ACCEPT<br/>使用者送出 priority 與 contactPhone<br/>完成 session]
-    PENDING --> CANCEL_BUTTON[CANCEL_按鈕<br/>按下取消<br/>取消 session]
-    PENDING --> CANCEL_TIMEOUT[CANCEL_逾時<br/>5 分鐘無回應<br/>讓 session 失效]
-    PENDING --> DECLINE
+    檢查owner --> DECLINE: meta.username 缺失
+    檢查owner --> Pending: register() + SSE push
 
-    ACCEPT --> DONE_ACCEPT([工具拿到資料，繼續建單])
-    CANCEL_BUTTON --> DONE_CANCEL_BUTTON([改用預設值 MEDIUM / N.A.])
-    CANCEL_TIMEOUT --> DONE_CANCEL_TIMEOUT([改用預設值 MEDIUM / N.A.])
+    Pending --> ACCEPT: 使用者送出<br/>priority 與 contactPhone<br/>complete(sessionId,<br/>owner, data)
+    Pending --> CANCEL_按鈕: 按下取消<br/>cancel(sessionId,<br/>owner)
+    Pending --> CANCEL_逾時: 5 分鐘無回應<br/>expire(sessionId)
+    Pending --> DECLINE: 非預期例外
+
+    ACCEPT --> [*]: 工具拿到資料，繼續建單
+    CANCEL_按鈕 --> [*]: 改用預設值 MEDIUM / N.A.
+    CANCEL_逾時 --> [*]: 改用預設值 MEDIUM / N.A.
+    DECLINE --> [*]: 本次 elicitation 失敗
+
+    note right of Pending
+        thread 凍結於
+        future.get(5, MINUTES)
+        使用者以另一條
+        POST /api/helpdesk/chat
+        request 提交答案
+    end note
 ```
 
-> 📌 **`Pending` 狀態下，那條 thread 是真的停住的**（`LockSupport.park()`）。解除它的不是 timer、不是輪詢，而是另一次 `POST /api/helpdesk/chat` 帶著 `sessionId` 進來，在完全不同的 Tomcat thread 上呼叫 `complete(sessionId, owner, data)`。使用者按取消時則呼叫 `cancel(sessionId, owner)`；等滿五分鐘則呼叫 `expire(sessionId)`。
+> 📌 **`Pending` 狀態下，那條 thread 是真的停住的**（`LockSupport.park()`）。解除它的不是 timer、不是輪詢，而是另一次 `POST /api/helpdesk/chat` 帶著 `sessionId` 進來，在完全不同的 Tomcat thread 上呼叫 `complete()`。
 
 ### 畫面與 log 實錄
 
