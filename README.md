@@ -159,71 +159,71 @@ stateDiagram-v2
 
 ### 畫面與 log 實錄
 
-> ⚠️ **以下截圖尚未拍攝** —— `docs/screenshots/` 目前是空目錄，圖片會顯示為破圖。
-> 每張圖的**重現步驟與取景重點**見 [截圖拍攝清單](#截圖拍攝清單)；照 [§5 的驗收對話](#5-開啟瀏覽器驗收對話)走一遍即可全部拍齊。
+> 以下截圖皆照 [§5 的驗收對話](#5-開啟瀏覽器驗收對話) 實際走一遍拍攝（使用者 `Anthony`，2026-09-24）。
 
 #### 主線：一組對話走完三種能力
 
 **① 起手式** — `http://localhost:5173` 自動導向 `/helpdesk-chat`。右上角先輸入使用者名稱（首次強制，存進 `localStorage` 的 `mcp-username`）。**注意頁首右側的 SSE 指示燈必須是「已連線」** —— 沒接上就送不出訊息，因為 elicitation 的追問只能靠這條通道推回來。
 
-![Helpdesk 首頁與 SSE 指示燈](docs/screenshots/01-helpdesk-home.png)
+![Helpdesk 首頁與 SSE 指示燈](docs/screenshots/home-sse.png)
 
-**② Sampling** — 問「我的 Outlook 收不到新郵件，但網頁版可以正常收信」。LLM 呼叫 `troubleshootIssue`，而 server **自己沒有 API key** —— 它把 9 筆 CLOSED 歷史工單組成知識庫，透過 `sampling/createMessage` 借 client 的 LLM 生成建議。回應內容應該對得上 seed 資料裡 David 那筆（同步頻率改 15 分鐘、確認未處於離線工作模式）。
+**② Sampling** — 問「我的 Outlook 收不到新郵件，但網頁版可以正常收信」。LLM 呼叫 `troubleshootIssue`，而 server **自己沒有 API key** —— 它把 9 筆 CLOSED 歷史工單組成知識庫，透過 `sampling/createMessage` 借 client 的 LLM 生成建議。
 
-![troubleshootIssue 的排障建議](docs/screenshots/02-troubleshoot-sampling.png)
+![troubleshootIssue 的排障建議](docs/screenshots/toubleshootissue.png)
 
-**③ Progress** — 回「試過了還是不行，幫我開單」。LLM 先呼叫 `getTicketStatus` 查既有工單，該工具內含 10 秒的模擬耗時流程，**每秒推一次進度**。畫面上只是在轉圈，但 client 的 terminal 會連續印出 10 行 —— 這是 `@McpProgress` handler 在另一條 thread 上收到的。
+回應裡的「同步頻率改為每 15 分鐘」「確認未處於離線工作模式」並不是 LLM 自由發揮，而是直接對得上 seed 資料中 **David（ID 4）** 那筆 CLOSED 工單的 `RESOLUTION`：
 
-![Client terminal 的進度通知](docs/screenshots/03-progress-log.png)
+![Seed 資料中 David 的工單](docs/screenshots/sampling-david-db.png)
 
-**④ Elicitation 被觸發** — 回「確認開單」。`createTicket` 執行到一半停住，透過 SSE 把問題推回聊天框。此刻畫面有三個特徵同時成立：⚠️ 追問泡泡出現、**輸入框在 loading 中仍可打字**（`allowSendWhileLoading`）、右下角多一顆「取消」鈕。
+**③ Progress + ④ Elicitation** — 回「試過了還是不行，幫我開單」。LLM 先呼叫 `getTicketStatus` 查既有工單，該工具內含 10 秒的模擬耗時流程，**每秒推一次進度**。畫面上只是在轉圈，但 client 的 terminal 會連續印出 10 行 —— 這是 `@McpProgress` handler 在 `boundedElastic` thread 上收到的；上方兩行 `HelpDeskLogBridge` 的「收到伺服器日誌」則是同一條通道上的 **Logging**：
 
-![Elicitation 追問與解鎖的輸入框](docs/screenshots/04-elicitation-prompt.png)
+![Client terminal 的進度通知](docs/screenshots/client-terminal.png)
 
-**⑤ 補完資料，工單落地** — 回「HIGH，0912-345-678」。畫面先出現「✅ 資料已收到，正在繼續處理」（這是第二次 POST 的回應），**接著第一次那個還卡著的 POST 才返回**，帶出完整的工單建立成功訊息與工單編號。
+緊接著 LLM 呼叫 `createTicket`，工具執行到一半停住，透過 SSE 把問題推回聊天框。此刻畫面有三個特徵同時成立：⚠️ 追問泡泡出現、**輸入框在 loading 中仍可打字**（placeholder 變成「請回覆上方補充資料的問題...」，即 `allowSendWhileLoading`）、右下角多一顆「取消」鈕。
 
-![補完資料後工單建立成功](docs/screenshots/05-elicitation-done.png)
+![Elicitation 追問與解鎖的輸入框](docs/screenshots/elicitation.png)
 
-#### 狀態與可觀測性
+**⑤ 補完資料，工單落地** — 回「HIGH，0912-345-678」。畫面先出現「✅ 資料已收到，正在繼續處理，請稍候...」（這是第二次 POST 的回應），**接著第一次那個還卡著的 POST 才返回**，帶出完整的工單建立成功訊息與工單編號 `#11`。
 
-**SSE 四種狀態** — `未連線 / 連線中... / 已連線 / 連線中斷，重試中...`。斷線時每 2 秒自動重連，且後端有 15 秒心跳主動清除死連線。
+![補完資料後工單建立成功](docs/screenshots/complete-ticket.png)
 
-![SSE 指示燈的四種狀態](docs/screenshots/06-sse-status-badge.png)
+用 DataGrip 或任何 H2 工具連上 `mySpringAi_MCP_Client/h2db/mcpserver_stdio`（`AUTO_SERVER=true` 允許執行中連線）驗證：9 筆 seed 的 CLOSED 工單之後，多了剛才建立的 ID 11 —— `OPEN`、`HIGH`、電話正是 elicitation 補進來的 `0912-345-678`。
 
-**啟動時的工具清單** — 這是**最有價值的驗證畫面**。`ToolUtil.selectToolsFor` 逐行印出每個開放的工具，三個 controller 各印一段並附總數。任何一段是「共開放 0 個 tools」就代表該 MCP server 沒連上。
-
-![啟動 log 中的工具清單](docs/screenshots/07-startup-tools-log.png)
-
-**PrettyLogger 的外框輸出** — `╔══ ► LLM Request #N` 的方框格式，把 `[SYSTEM]` / `[USER]` / `[TOOL_CALL]` / `[TOOL_RESP]` 分段標示。`#N` 每次 HTTP 請求重新從 1 數起，所以一眼能看出「這一次建單總共打了幾次 LLM」。
-
-![PrettyLoggerAdvisor 的格式化 log](docs/screenshots/08-pretty-logger.png)
+![H2 中新建立的工單](docs/screenshots/ticket-created-db.png)
 
 #### 另外兩個 MCP server
 
-**FileSystem 頁** — 只掛 filesystem 工具。system prompt 特別交代「`mymcp` 是授權根目錄本身，不是它底下的子資料夾」，所以要求列出內容時 LLM 應該用 `"."` 而不是 `"mymcp"`。
+**FileSystem 頁** — 只掛 filesystem 工具，授權根目錄是桌面上的 `mymcp`。system prompt 特別交代「`mymcp` 是授權根目錄本身，不是它底下的子資料夾」，並明示不提供刪除。
 
-![FileSystem 聊天頁](docs/screenshots/09-filesystem-chat.png)
+![FileSystem 聊天頁](docs/screenshots/filesystem-home.png)
 
-**工單資料落地** — 用 DataGrip 或任何 H2 工具連上（`AUTO_SERVER=true` 允許執行中連線）。應該看到 9 筆 seed 的 CLOSED 工單，加上剛才建立的那筆 OPEN。
+說「新建一個檔案名 helloworld.txt」，LLM 會先反問內容，拿到後再呼叫 filesystem 的寫檔工具：
 
-![H2 中的 HELP_DESK_TICKETS 表](docs/screenshots/10-h2-tickets.png)
+![FileSystem 建立檔案的對話](docs/screenshots/filesystem-createfile.png)
 
-### 截圖拍攝清單
+回到桌面 `mymcp` 資料夾，檔案確實落地：
 
-| 檔名 | 怎麼重現 | 取景重點 |
+![helloworld.txt 已建立](docs/screenshots/filesystem-filecreated.png)
+
+**GitHub 頁** — 只掛 github 工具（docker 起的 `github-mcp-server`），範圍限定在單一 repository。
+
+![GitHub 聊天頁](docs/screenshots/github-home.png)
+
+說「查看我的 repo 內容」，LLM 呼叫 github 工具列出 repo 根目錄的檔案與資料夾（含連結與大小）：
+
+![GitHub repo 內容列表](docs/screenshots/checkmyrepo.png)
+
+> 截圖中第一次詢問時 LLM 回了一段 GitHub device 授權說明，同一句話重送一次就正常列出內容。本專案以 `GITHUB_PERSONAL_ACCESS_TOKEN` 認證，遇到這種回覆時先確認 token 已設定，再重送即可。
+
+#### 尚待補拍
+
+以下畫面文中有提到但目前尚無截圖，補拍後放進 `docs/screenshots/` 並在上方對應處引用即可：
+
+| 建議檔名 | 怎麼重現 | 取景重點 |
 |---|---|---|
-| `01-helpdesk-home.png` | 開 `:5173`，右上輸入 username | 初始問候訊息 **＋** 指示燈「已連線」要同框 |
-| `02-troubleshoot-sampling.png` | 問「Outlook 收不到新郵件，但網頁版正常」 | 排障建議全文（可對照 seed 的 David 那筆） |
-| `03-progress-log.png` | 接著說「試過了還是不行，幫我開單」 | Client terminal 連續 10 行 `進度更新 - 已完成 N%` |
-| `04-elicitation-prompt.png` | 再說「確認開單」 | ⚠️ 泡泡、可打字的輸入框、「取消」鈕**三者同框** |
-| `05-elicitation-done.png` | 回「HIGH，0912-345-678」 | 「✅ 資料已收到」**與**最終工單成功訊息（含編號）同框 |
-| `06-sse-status-badge.png` | 停掉後端再啟動 | 四種狀態（可分別截圖後合成一張） |
-| `07-startup-tools-log.png` | Client 啟動當下的 terminal | 三段 `ToolUtil` 清單 + 各自的「共開放 N 個 tools」 |
-| `08-pretty-logger.png` | 任一次建單後回看 terminal | 完整一組 `╔══ ► Request #N` / `╚` 方框，含 `[TOOL_CALL]` |
-| `09-filesystem-chat.png` | FileSystem 頁說「列出 mymcp 的內容」 | LLM 的回應 + 檔案清單 |
-| `10-h2-tickets.png` | DataGrip 連 `mySpringAi_MCP_Client/h2db/mcpserver_stdio` | `HELP_DESK_TICKETS` 表，OPEN 與 CLOSED 並存 |
-
-> 建議寬度 1200–1600px，深色 terminal 主題與前端的 Cyberpunk 主題視覺上較一致。
+| `sse-status-badge.png` | 停掉後端再啟動 | `未連線 / 連線中... / 已連線 / 連線中斷，重試中...` 四種狀態（可分別截圖後合成一張）；斷線時每 2 秒自動重連，後端有 15 秒心跳 |
+| `startup-tools-log.png` | Client 啟動當下的 terminal | 三段 `ToolUtil` 清單 + 各自的「共開放 N 個 tools」；任一段為 0 代表該 MCP server 沒連上 |
+| `pretty-logger.png` | 任一次建單後回看 terminal | 完整一組 `╔══ ► LLM Request #N` / `╚` 方框，含 `[TOOL_CALL]` / `[TOOL_RESP]` |
 
 ---
 
@@ -362,7 +362,7 @@ springai_mcp_clientapp_stdio/
 │   ├── context/UsernameContext.jsx         → localStorage['mcp-username']
 │   └── vite.config.js                      /api → :8080，不 rewrite
 │
-└── docs/screenshots/                     README 截圖（目前為空，見拍攝清單）
+└── docs/screenshots/                     README 截圖（見 §1 畫面與 log 實錄）
 ```
 
 > ⚠️ **Server 與 Client 不是 Maven 模組依賴，沒有 parent pom。** Client 是用 `java -jar ./mcp-server-stdio/*.jar` 把 server 當子行程拉起來的 —— 那是一份**實體 JAR 拷貝**（已強制加入版控，儘管根 `.gitignore` 忽略 `*.jar`）。**改了 server 就必須重打包並手動覆蓋**，否則 client 看到的還是舊的 tool schema。
@@ -774,14 +774,15 @@ npm run dev
 
 <http://localhost:5173> → 自動導向 `/helpdesk-chat`。**先在右上角輸入使用者名稱**，等指示燈轉為「已連線」。
 
-下面這組對話**依序走完三種反向能力**，同時也是 [§1 截圖清單](#截圖拍攝清單) 的拍攝腳本：
+下面這組對話**依序走完三種反向能力**，同時也是 [§1 畫面與 log 實錄](#畫面與-log-實錄) 的拍攝腳本：
 
 | # | 你輸入 | 觸發 | 你該看到 | 對應截圖 |
 |---|---|---|---|---|
-| 1 | 我的 Outlook 收不到新郵件，但網頁版可以正常收信 | `troubleshootIssue` → **Sampling** | 對得上 seed 資料 David 那筆的排障步驟 | `02` |
-| 2 | 試過了還是不行，幫我開單 | `getTicketStatus` → **Progress** | terminal 連續 10 行 `進度更新 - 已完成 N%`（約 10 秒） | `03` |
-| 3 | 確認開單 | `createTicket` → **Elicitation** | ⚠️ 追問泡泡 + 輸入框解鎖 + 取消鈕 | `04` |
-| 4 | HIGH，0912-345-678 | elicitation 完成 | 「✅ 資料已收到」→ 隨後工單建立成功（含編號） | `05` |
+| 1 | 我的 Outlook 收不到新郵件，但網頁版可以正常收信 | `troubleshootIssue` → **Sampling** | 對得上 seed 資料 David 那筆的排障步驟 | `toubleshootissue.png`、`sampling-david-db.png` |
+| 2 | 試過了還是不行，幫我開單 | `getTicketStatus` → **Progress**，接著 `createTicket` → **Elicitation** | terminal 連續 10 行 `進度更新 - 已完成 N%`（約 10 秒），隨後 ⚠️ 追問泡泡 + 輸入框解鎖 + 取消鈕 | `client-terminal.png`、`elicitation.png` |
+| 3 | HIGH，0912-345-678 | elicitation 完成 | 「✅ 資料已收到」→ 隨後工單建立成功（含編號） | `complete-ticket.png`、`ticket-created-db.png` |
+
+> 若 LLM 在第 2 步只查了工單、先問你「是否要開單」而沒直接呼叫 `createTicket`，回一句「確認開單」即可觸發 elicitation。
 
 **Logging** 則貫穿全程 —— 每一步的 terminal 都會出現 `收到伺服器日誌 - 等級: INFO, 來源: MySpringAi_MCP_Server_stdio_logger, 訊息: …`。
 
