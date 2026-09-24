@@ -24,7 +24,7 @@
   <img alt="Node" src="https://img.shields.io/badge/npx-server--filesystem-339933?logo=nodedotjs&logoColor=white">
 </p>
 
-## 這個 repo 想證明的一件事
+## 這個 repo 的核心重點
 
 絕大多數 MCP 教學到 **tool calling** 就結束了 —— client 呼叫 server 的工具，server 回傳結果，單向、一來一回、結束。
 
