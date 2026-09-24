@@ -279,7 +279,7 @@ flowchart TB
     S1 -.->|"sampling/createMessage<br/>request，等回覆"| H2
     S1 -.->|"notifications/progress<br/>單向通知"| H3
     S1 -.->|"notifications/message<br/>單向通知"| H4
-    H2 -->|"ChatModel 直呼<br/>繞過 Advisor"| OAI
+    H2 -->|"Sampling：替 server 生成排障建議<br/>ChatModel 直呼，繞過 Advisor"| OAI
     H3 --> LOG
     H4 --> LOG
 
@@ -288,7 +288,7 @@ flowchart TB
     SE -.->|"④ SSE event: elicitation"| HP
     C1 -->|"subscribe<br/>重連補推 pending"| SE
     C1 -->|"⑤ complete / cancel<br/>喚醒阻塞的 thread"| SS
-    C1 -->|"parserClient<br/>回覆 → JSON"| OAI
+    C1 -->|"Elicitation：解析使用者補充的回覆<br/>parserClient 自然語言 → JSON"| OAI
 
     style FE fill:#e6f7fb,stroke:#0288a8,color:#0b2530
     style BE fill:#fdeef7,stroke:#c2185b,color:#3a0b22
